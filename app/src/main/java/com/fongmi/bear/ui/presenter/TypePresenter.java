@@ -6,17 +6,15 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.leanback.widget.Presenter;
 
-import com.fongmi.bear.bean.Func;
-import com.fongmi.bear.bean.Vod;
-import com.fongmi.bear.databinding.AdapterVodBinding;
-import com.fongmi.bear.utils.Utils;
+import com.fongmi.bear.bean.Class;
+import com.fongmi.bear.databinding.AdapterTypeBinding;
 
-public class VodPresenter extends Presenter {
+public class TypePresenter extends Presenter {
 
     private OnClickListener mListener;
 
     public interface OnClickListener {
-        void onItemClick(Func item);
+        void onItemClick(Class item);
     }
 
     public void setOnClickListener(OnClickListener listener) {
@@ -25,17 +23,15 @@ public class VodPresenter extends Presenter {
 
     @Override
     public Presenter.ViewHolder onCreateViewHolder(ViewGroup parent) {
-        return new ViewHolder(AdapterVodBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(AdapterTypeBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
     public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object object) {
-        Vod item = (Vod) object;
+        Class item = (Class) object;
         ViewHolder holder = (ViewHolder) viewHolder;
-        holder.binding.name.setText(item.getVodName());
-        holder.binding.remark.setText(item.getVodRemarks());
-        holder.binding.remark.setVisibility(item.getRemarkVisible());
-        Utils.loadImage(item.getVodPic(), holder.binding.image);
+        holder.binding.name.setText(item.getTypeName());
+        setOnClickListener(holder, view -> mListener.onItemClick(item));
     }
 
     @Override
@@ -44,9 +40,9 @@ public class VodPresenter extends Presenter {
 
     public static class ViewHolder extends Presenter.ViewHolder {
 
-        private final AdapterVodBinding binding;
+        private final AdapterTypeBinding binding;
 
-        public ViewHolder(@NonNull AdapterVodBinding binding) {
+        public ViewHolder(@NonNull AdapterTypeBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
