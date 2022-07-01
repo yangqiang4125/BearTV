@@ -24,7 +24,6 @@ import com.fongmi.bear.ui.presenter.FilterPresenter;
 import com.fongmi.bear.ui.presenter.ProgressPresenter;
 import com.fongmi.bear.ui.presenter.VodPresenter;
 import com.fongmi.bear.utils.ResUtil;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
@@ -70,8 +69,8 @@ public class VodFragment extends Fragment implements Scroller.Callback {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         setRecyclerView();
         setViewModel();
-        getContent();
         setFilter();
+        getVideo();
     }
 
     private void setRecyclerView() {
@@ -89,8 +88,8 @@ public class VodFragment extends Fragment implements Scroller.Callback {
         mSiteViewModel.mResult.observe(getViewLifecycleOwner(), result -> {
             mAdapter.remove("progress");
             mScroller.endLoading(result.getList().isEmpty());
-            for (List<Vod> items : Lists.partition(result.getList(), 5)) {
-                ArrayObjectAdapter adapter = new ArrayObjectAdapter(new VodPresenter());
+            for (List<Vod> items : result.partition()) {
+                ArrayObjectAdapter adapter = new ArrayObjectAdapter(new VodPresenter(items.size()));
                 adapter.addAll(0, items);
                 mAdapter.add(new ListRow(adapter));
             }
@@ -112,23 +111,23 @@ public class VodFragment extends Fragment implements Scroller.Callback {
         for (int i = 0; i < adapter.size(); i++) ((Filter.Value) adapter.get(i)).setActivated(item);
         adapter.notifyArrayItemRangeChanged(0, adapter.size());
         mExtend.put(key, item.getV());
-        getContent();
+        getVideo();
     }
 
-    private void getContent() {
+    private void getVideo() {
         mScroller.reset();
-        getContent("1");
+        getVideo("1");
     }
 
-    private void getContent(String page) {
+    private void getVideo(String page) {
         boolean clear = page.equals("1") && mAdapter.size() > mFilters.size();
         if (clear) mAdapter.removeItems(mFilters.size(), mAdapter.size() - mFilters.size());
         mSiteViewModel.categoryContent(getTypeId(), page, true, mExtend);
+        mAdapter.add("progress");
     }
 
     @Override
     public void onLoadMore(String page) {
-        mAdapter.add("progress");
-        getContent(page);
+        getVideo(page);
     }
 }
