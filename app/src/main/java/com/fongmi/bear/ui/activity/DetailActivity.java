@@ -20,6 +20,7 @@ import com.fongmi.bear.R;
 import com.fongmi.bear.bean.Vod;
 import com.fongmi.bear.databinding.ActivityDetailBinding;
 import com.fongmi.bear.model.SiteViewModel;
+import com.fongmi.bear.player.Player;
 import com.fongmi.bear.ui.presenter.EpisodePresenter;
 import com.fongmi.bear.ui.presenter.FlagPresenter;
 import com.fongmi.bear.ui.presenter.GroupPresenter;
@@ -28,14 +29,14 @@ import com.fongmi.bear.utils.ResUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DetailActivity extends BaseActivity {
+public class DetailActivity extends BaseActivity implements Player.Callback {
 
     private ActivityDetailBinding mBinding;
-    private SiteViewModel mSiteViewModel;
     private ArrayObjectAdapter mFlagAdapter;
-    private ArrayObjectAdapter mEpisodeAdapter;
     private ArrayObjectAdapter mGroupAdapter;
+    private ArrayObjectAdapter mEpisodeAdapter;
     private EpisodePresenter mEpisodePresenter;
+    private SiteViewModel mSiteViewModel;
     private View mOldView;
 
     private String getId() {
@@ -55,7 +56,8 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        mBinding.progress.showProgress();
+        mBinding.progressLayout.showProgress();
+        mBinding.video.setPlayer(Player.get().exo(this));
         setRecyclerView();
         setViewModel();
         getDetail();
@@ -63,7 +65,29 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     protected void initEvent() {
-
+        mBinding.flag.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
+            @Override
+            public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
+                if (mOldView != null) mOldView.setActivated(false);
+                if (child == null) return;
+                mOldView = child.itemView;
+                mOldView.setActivated(true);
+                setEpisode((Vod.Flag) mFlagAdapter.get(position));
+            }
+        });
+        mBinding.group.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
+            @Override
+            public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
+                if (mEpisodeAdapter.size() > 20) {
+                    mBinding.episode.setSelectedPosition(position * 20);
+                }
+            }
+        });
+        mEpisodePresenter.setOnClickListener(item -> {
+            for (int i = 0; i < mEpisodeAdapter.size(); i++) ((Vod.Flag.Episode) mEpisodeAdapter.get(i)).setActivated(item);
+            mEpisodeAdapter.notifyArrayItemRangeChanged(0, mEpisodeAdapter.size());
+            getPlayer(mEpisodePresenter.getFlag(), item.getUrl());
+        });
     }
 
     private void setRecyclerView() {
@@ -76,22 +100,6 @@ public class DetailActivity extends BaseActivity {
         mBinding.group.setHorizontalSpacing(ResUtil.dp2px(8));
         mBinding.group.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         mBinding.group.setAdapter(new ItemBridgeAdapter(mGroupAdapter = new ArrayObjectAdapter(new GroupPresenter())));
-        mBinding.group.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
-            @Override
-            public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
-                if (mEpisodeAdapter.size() > 20) mBinding.episode.setSelectedPosition(position * 20);
-            }
-        });
-        mBinding.flag.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
-            @Override
-            public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
-                if (mOldView != null) mOldView.setActivated(false);
-                if (child == null) return;
-                mOldView = child.itemView;
-                mOldView.setActivated(true);
-                setEpisode((Vod.Flag) mFlagAdapter.get(position));
-            }
-        });
     }
 
     private void getDetail() {
@@ -99,19 +107,21 @@ public class DetailActivity extends BaseActivity {
     }
 
     private void getPlayer(String flag, String id) {
+        mBinding.progress.getRoot().setVisibility(View.VISIBLE);
         mSiteViewModel.playerContent(flag, id);
     }
 
     private void setViewModel() {
         mSiteViewModel = new ViewModelProvider(this).get(SiteViewModel.class);
-        mSiteViewModel.mResult.observe(this, result -> {
-            if (result.getList().isEmpty()) mBinding.progress.showErrorText();
+        mSiteViewModel.player.observe(this, object -> Player.get().setMediaSource(object));
+        mSiteViewModel.result.observe(this, result -> {
+            if (result.getList().isEmpty()) mBinding.progressLayout.showErrorText();
             else setDetail(result.getList().get(0));
         });
     }
 
     private void setDetail(Vod item) {
-        mBinding.progress.showContent();
+        mBinding.progressLayout.showContent();
         mBinding.name.setText(item.getVodName());
         setText(mBinding.year, R.string.detail_year, item.getVodYear());
         setText(mBinding.area, R.string.detail_area, item.getVodArea());
@@ -130,6 +140,7 @@ public class DetailActivity extends BaseActivity {
 
     private void setEpisode(Vod.Flag item) {
         mEpisodeAdapter.clear();
+        mEpisodePresenter.setFlag(item.getFlag());
         mEpisodeAdapter.addAll(0, item.getEpisodes());
         if (item.getEpisodes().size() > 20) setGroup(item.getEpisodes().size());
     }
@@ -140,5 +151,16 @@ public class DetailActivity extends BaseActivity {
         for (int i = 0; i < itemSize; i++) items.add(String.valueOf(i * 20 + 1));
         mBinding.group.setVisibility(View.VISIBLE);
         mGroupAdapter.addAll(0, items);
+    }
+
+    @Override
+    public void onPrepared() {
+        mBinding.progress.getRoot().setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Player.get().stop();
     }
 }

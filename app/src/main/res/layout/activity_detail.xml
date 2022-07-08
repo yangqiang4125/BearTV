@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.fongmi.bear.ui.custom.ProgressLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/progress"
+    android:id="@+id/progressLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/video"
+    <FrameLayout
+        android:id="@+id/frame"
         android:layout_width="360dp"
         android:layout_height="200dp"
         android:layout_marginStart="24dp"
@@ -14,7 +15,20 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="12dp"
         android:focusable="true"
-        android:focusableInTouchMode="true" />
+        android:focusableInTouchMode="true">
+
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:id="@+id/video"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:use_controller="false" />
+
+        <include
+            android:id="@+id/progress"
+            layout="@layout/view_progress"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/name"
@@ -22,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
-        android:layout_toEndOf="@+id/video"
+        android:layout_toEndOf="@+id/frame"
         android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="24sp"
@@ -36,7 +50,7 @@
         android:layout_below="@+id/name"
         android:layout_alignStart="@+id/name"
         android:layout_marginEnd="24dp"
-        android:layout_toEndOf="@+id/video"
+        android:layout_toEndOf="@+id/frame"
         android:orientation="horizontal">
 
         <TextView
@@ -92,7 +106,7 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:layout_toEndOf="@+id/video"
+        android:layout_toEndOf="@+id/frame"
         android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="16sp"
@@ -106,7 +120,7 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:layout_toEndOf="@+id/video"
+        android:layout_toEndOf="@+id/frame"
         android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="16sp"
@@ -120,7 +134,7 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:layout_toEndOf="@+id/video"
+        android:layout_toEndOf="@+id/frame"
         android:ellipsize="end"
         android:lineSpacingExtra="4dp"
         android:maxLines="3"
@@ -132,7 +146,7 @@
         android:id="@+id/flag"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/video"
+        android:layout_below="@+id/frame"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:paddingStart="24dp"
