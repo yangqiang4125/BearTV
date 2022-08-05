@@ -79,10 +79,6 @@ public class DetailActivity extends BaseActivity implements KeyDown.Listener {
         return (Vod.Flag) mFlagAdapter.get(mBinding.flag.getSelectedPosition());
     }
 
-    private Vod.Flag.Episode getEpisode() {
-        return (Vod.Flag.Episode) mEpisodeAdapter.get(getEpisodePosition());
-    }
-
     private int getEpisodePosition() {
         for (int i = 0; i < mEpisodeAdapter.size(); i++) if (((Vod.Flag.Episode) mEpisodeAdapter.get(i)).isActivated()) return i;
         return 0;
@@ -166,7 +162,7 @@ public class DetailActivity extends BaseActivity implements KeyDown.Listener {
     }
 
     private void getPlayer() {
-        Vod.Flag.Episode item = getEpisode();
+        Vod.Flag.Episode item = (Vod.Flag.Episode) mEpisodeAdapter.get(getEpisodePosition());
         if (mFullscreen) Notify.show(ResUtil.getString(R.string.play_ready, item.getName()));
         mSiteViewModel.playerContent(getKey(), getVodFlag().getFlag(), item.getUrl());
         mBinding.progress.getRoot().setVisibility(View.VISIBLE);
@@ -209,22 +205,17 @@ public class DetailActivity extends BaseActivity implements KeyDown.Listener {
         for (int i = 0; i < mFlagAdapter.size(); i++) {
             Vod.Flag flag = (Vod.Flag) mFlagAdapter.get(i);
             flag.setActivated(flag.equals(item));
-            if (flag.isActivated()) {
-                mBinding.flag.setSelectedPosition(i);
-                mEpisodeAdapter.setItems(flag.getEpisodes(), null);
-                setGroup(flag.getEpisodes().size());
-            }
+            if (!flag.isActivated()) continue;
+            mBinding.flag.setSelectedPosition(i);
+            mEpisodeAdapter.setItems(flag.getEpisodes(), null);
+            setGroup(flag.getEpisodes().size());
         }
         mFlagAdapter.notifyArrayItemRangeChanged(0, mFlagAdapter.size());
     }
 
     private void setEpisodeActivated(Vod.Flag.Episode item) {
         mCurrent = mBinding.flag.getSelectedPosition();
-        for (int i = 0; i < mFlagAdapter.size(); i++) {
-            Vod.Flag flag = (Vod.Flag) mFlagAdapter.get(i);
-            if (mCurrent == i) flag.setActivated(item);
-            else flag.deactivated();
-        }
+        for (int i = 0; i < mFlagAdapter.size(); i++) ((Vod.Flag) mFlagAdapter.get(i)).toggle(mCurrent == i, item);
         mEpisodeAdapter.notifyArrayItemRangeChanged(0, mEpisodeAdapter.size());
         mHandler.post(() -> mBinding.episode.setSelectedPosition(getEpisodePosition()));
         getPlayer();
@@ -316,6 +307,7 @@ public class DetailActivity extends BaseActivity implements KeyDown.Listener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPlaybackStateChanged(PlayerEvent event) {
         mBinding.progress.getRoot().setVisibility(event.getState() == Player.STATE_BUFFERING ? View.VISIBLE : View.GONE);
+        if (event.getState() == Player.STATE_ENDED) onNext();
         Notify.show(event.getMsg());
     }
 
