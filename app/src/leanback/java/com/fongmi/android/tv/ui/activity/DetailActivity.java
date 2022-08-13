@@ -229,7 +229,7 @@ public class DetailActivity extends BaseActivity implements KeyDown.Listener {
     }
 
     private void setEpisodeActivated(Vod.Flag.Episode item) {
-        if (shouldEnterFullscreen()) return;
+        if (shouldEnterFullscreen(item)) return;
         mCurrent = mBinding.flag.getSelectedPosition();
         for (int i = 0; i < mFlagAdapter.size(); i++) ((Vod.Flag) mFlagAdapter.get(i)).toggle(mCurrent == i, item);
         mEpisodeAdapter.notifyArrayItemRangeChanged(0, mEpisodeAdapter.size());
@@ -245,8 +245,8 @@ public class DetailActivity extends BaseActivity implements KeyDown.Listener {
         mGroupAdapter.setItems(items, null);
     }
 
-    private boolean shouldEnterFullscreen() {
-        boolean enter = !mFullscreen && mBinding.episode.getSelectedPosition() == getEpisodePosition();
+    private boolean shouldEnterFullscreen(Vod.Flag.Episode item) {
+        boolean enter = !mFullscreen && item.isActivated();
         if (enter) enterFullscreen();
         return enter;
     }
