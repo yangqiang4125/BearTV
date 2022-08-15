@@ -69,6 +69,10 @@ public class SearchActivity extends BaseActivity implements VodPresenter.OnClick
         return getIntent().getStringExtra("keyword");
     }
 
+    private boolean hasVoice() {
+        return SpeechRecognizer.isRecognitionAvailable(this);
+    }
+
     public static void start(Activity activity) {
         start(activity, "");
     }
@@ -96,6 +100,7 @@ public class SearchActivity extends BaseActivity implements VodPresenter.OnClick
     protected void initView() {
         mHandler = new Handler(Looper.getMainLooper());
         mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        mBinding.voice.setVisibility(hasVoice() ? View.VISIBLE : View.GONE);
         mBinding.keyword.requestFocus();
         CustomKeyboard.init(mBinding);
         setRecyclerView();
@@ -191,7 +196,7 @@ public class SearchActivity extends BaseActivity implements VodPresenter.OnClick
         mService = Executors.newFixedThreadPool(5);
         for (Site site : mSites) mService.execute(() -> mSiteViewModel.searchContent(site.getKey(), keyword));
         Utils.hideKeyboard(mBinding.keyword);
-        showProgress();
+        showResult();
     }
 
     private void stopSearch() {
@@ -200,19 +205,19 @@ public class SearchActivity extends BaseActivity implements VodPresenter.OnClick
         mService = null;
     }
 
-    private void showProgress() {
+    private void showResult() {
         mBinding.layout.setVisibility(View.GONE);
         mBinding.progressLayout.setVisibility(View.VISIBLE);
         mBinding.progressLayout.showProgress();
     }
 
-    private void hideProgress() {
+    private void hideResult() {
         mBinding.clear.requestFocus();
         mBinding.layout.setVisibility(View.VISIBLE);
         mBinding.progressLayout.setVisibility(View.INVISIBLE);
     }
 
-    private boolean isProgressVisible() {
+    private boolean isResultVisible() {
         return mBinding.progressLayout.getVisibility() == View.VISIBLE;
     }
 
@@ -249,9 +254,9 @@ public class SearchActivity extends BaseActivity implements VodPresenter.OnClick
 
     @Override
     public void onBackPressed() {
-        if (isProgressVisible()) {
+        if (isResultVisible()) {
             mAdapter.clear();
-            hideProgress();
+            hideResult();
             stopSearch();
         } else {
             super.onBackPressed();
