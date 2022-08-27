@@ -4,10 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="150dp"
     android:layout_height="200dp"
-    android:background="@drawable/selector_vod"
     android:focusable="true"
-    android:focusableInTouchMode="true"
-    android:padding="1dp">
+    android:focusableInTouchMode="true">
 
     <com.makeramen.roundedimageview.RoundedImageView
         android:id="@+id/image"
@@ -89,5 +87,11 @@
         android:textColor="@color/white"
         android:textSize="16sp"
         tools:text="蜘蛛人" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/selector_vod"
+        android:duplicateParentState="true" />
 
 </RelativeLayout>
