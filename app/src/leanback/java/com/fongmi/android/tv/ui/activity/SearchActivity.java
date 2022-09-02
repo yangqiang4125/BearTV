@@ -42,7 +42,7 @@ import okhttp3.Response;
 
 public class SearchActivity extends BaseActivity implements WordAdapter.OnClickListener, HistoryAdapter.OnClickListener, CustomKeyboard.Callback {
 
-    private final ActivityResultLauncher<String> launcherString = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> onVoice());
+    private final ActivityResultLauncher<String> launcher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> startListening());
 
     private ActivitySearchBinding mBinding;
     private SpeechRecognizer mRecognizer;
@@ -132,9 +132,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     public void onDataChanged(int size) {
-        int visible = size == 0 ? View.GONE : View.VISIBLE;
-        if (mBinding.historyLayout.getVisibility() == visible) return;
-        mBinding.historyLayout.setVisibility(visible);
+        mBinding.historyLayout.setVisibility(size == 0 ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -155,7 +153,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     @Override
     public void onVoice() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            launcherString.launch(Manifest.permission.RECORD_AUDIO);
+            launcher.launch(Manifest.permission.RECORD_AUDIO);
         } else {
             startListening();
         }
