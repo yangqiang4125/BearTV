@@ -198,7 +198,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void onItemClick(Vod item) {
-        if (item.getVodId().startsWith("msearch:")) onLongClick(item);
+        if (item.shouldSearch()) onLongClick(item);
         else DetailActivity.start(this, item.getVodId());
     }
 
@@ -287,12 +287,13 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
             Notify.show(R.string.app_exit);
             mHandler.postDelayed(() -> mConfirmExit = false, 1000);
         } else {
-            destroy();
             super.onBackPressed();
         }
     }
 
-    private void destroy() {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         Server.get().stop();
         Players.get().release();
         EventBus.getDefault().unregister(this);
