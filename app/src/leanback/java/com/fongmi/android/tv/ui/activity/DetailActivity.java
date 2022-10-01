@@ -23,6 +23,7 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.ApiConfig;
 import com.fongmi.android.tv.bean.History;
+import com.fongmi.android.tv.bean.Keep;
 import com.fongmi.android.tv.bean.Parse;
 import com.fongmi.android.tv.bean.Part;
 import com.fongmi.android.tv.bean.Result;
@@ -39,6 +40,7 @@ import com.fongmi.android.tv.player.ExoUtil;
 import com.fongmi.android.tv.player.Players;
 import com.fongmi.android.tv.ui.custom.CustomKeyDown;
 import com.fongmi.android.tv.ui.custom.TrackSelectionDialog;
+import com.fongmi.android.tv.ui.custom.dialog.DescDialog;
 import com.fongmi.android.tv.ui.presenter.EpisodePresenter;
 import com.fongmi.android.tv.ui.presenter.FlagPresenter;
 import com.fongmi.android.tv.ui.presenter.GroupPresenter;
@@ -146,6 +148,8 @@ public class DetailActivity extends BaseActivity implements CustomKeyDown.Listen
         EventBus.getDefault().register(this);
         mControl.replay.setOnClickListener(view -> getPlayer(true));
         mBinding.video.setOnClickListener(view -> enterFullscreen());
+        mBinding.desc.setOnClickListener(view -> onDesc());
+        mBinding.keep.setOnClickListener(view -> onKeep());
         mControl.next.setOnClickListener(view -> checkNext());
         mControl.prev.setOnClickListener(view -> checkPrev());
         mControl.scale.setOnClickListener(view -> onScale());
@@ -192,13 +196,13 @@ public class DetailActivity extends BaseActivity implements CustomKeyDown.Listen
     }
 
     private void setVideoView() {
-        getPlayerView().setVisibility(View.VISIBLE);
         getPlayerView().setPlayer(mPlayers.exo());
+        getPlayerView().setVisibility(View.VISIBLE);
         getPlayerView().setResizeMode(Prefers.getScale());
         getPlayerView().getSubtitleView().setStyle(ExoUtil.getCaptionStyle());
-        mControl.speed.setText(mPlayers.getSpeed());
-        mControl.scale.setText(ResUtil.getStringArray(R.array.select_scale)[Prefers.getScale()]);
         mControl.interval.setText(ResUtil.getString(R.string.second, Prefers.getInterval()));
+        mControl.scale.setText(ResUtil.getStringArray(R.array.select_scale)[Prefers.getScale()]);
+        mControl.speed.setText(mPlayers.getSpeed());
     }
 
     private void setViewModel() {
@@ -251,11 +255,13 @@ public class DetailActivity extends BaseActivity implements CustomKeyDown.Listen
         mBinding.video.requestFocus();
         getPart(item.getVodName());
         checkHistory();
+        checkKeep();
     }
 
     private void setText(TextView view, int resId, String text) {
         if (text.isEmpty()) view.setVisibility(View.GONE);
         else view.setText(ResUtil.getString(resId, text));
+        view.setTag(text);
     }
 
     private void setFlagActivated(Vod.Flag item) {
@@ -343,6 +349,18 @@ public class DetailActivity extends BaseActivity implements CustomKeyDown.Listen
         mBinding.video.setLayoutParams(mFrameParams);
         getPlayerView().setUseController(false);
         mFullscreen = false;
+    }
+
+    private void onDesc() {
+        DescDialog.show(this, mBinding.content.getTag().toString());
+    }
+
+    private void onKeep() {
+        Keep keep = Keep.find(getHistoryKey());
+        Notify.show(keep != null ? "已取消收藏" : "已加入收藏");
+        if (keep != null) keep.delete();
+        else createKeep();
+        checkKeep();
     }
 
     private void checkNext() {
@@ -492,6 +510,20 @@ public class DetailActivity extends BaseActivity implements CustomKeyDown.Listen
         if (mHistory == null || mPlayers.getCurrentPosition() <= 0) return;
         mHistory.update(mPlayers.getCurrentPosition(), mPlayers.getDuration());
         RefreshEvent.history();
+    }
+
+    private void checkKeep() {
+        mBinding.keep.setCompoundDrawablesRelativeWithIntrinsicBounds(Keep.find(getHistoryKey()) == null ? R.drawable.ic_keep_not_yet : R.drawable.ic_keep_added, 0, 0, 0);
+    }
+
+    private void createKeep() {
+        Keep keep = new Keep();
+        keep.setKey(getHistoryKey());
+        keep.setCid(ApiConfig.getCid());
+        keep.setVodPic(mBinding.video.getTag().toString());
+        keep.setVodName(mBinding.name.getText().toString());
+        keep.setCreateTime(System.currentTimeMillis());
+        keep.save();
     }
 
     private final Runnable mHideCenter = new Runnable() {
