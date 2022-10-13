@@ -86,9 +86,9 @@ public class Utils {
     public static String getMD5(String src) {
         try {
             if (TextUtils.isEmpty(src)) return "";
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] messageDigest = md.digest(src.getBytes());
-            BigInteger no = new BigInteger(1, messageDigest);
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] bytes = digest.digest(src.getBytes());
+            BigInteger no = new BigInteger(1, bytes);
             StringBuilder sb = new StringBuilder(no.toString(16));
             while (sb.length() < 32) sb.insert(0, "0");
             return sb.toString().toLowerCase();
@@ -99,6 +99,15 @@ public class Utils {
 
     public static String getBase64(String ext) {
         return Base64.encodeToString(ext.getBytes(), Base64.DEFAULT | Base64.NO_WRAP);
+    }
+
+    public static String substring(String text) {
+        return substring(text, 1);
+    }
+
+    public static String substring(String text, int num) {
+        if (text != null && text.length() > num) return text.substring(0, text.length() - num);
+        return text;
     }
 
     public static int getDigit(String text) {
