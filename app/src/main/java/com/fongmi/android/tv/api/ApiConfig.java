@@ -278,7 +278,7 @@ public class ApiConfig {
     }
 
     public String getWall() {
-        return TextUtils.isEmpty(wall) ? "" : wall;
+        return TextUtils.isEmpty(wall) ? "http://test.xinjun58.com/sp/pic/W-17.png" : wall;
     }
 
     private void setWall(String wall) {
