@@ -1,8 +1,10 @@
 name: Auto Build self
 
-on:
-  schedule:
-    - cron: 15 10 12 * ?
+#on:
+  #push:
+  #  branches:
+  #    - main
+  #pull_request:
   workflow_dispatch:
 
 jobs:
@@ -15,9 +17,9 @@ jobs:
           fetch-depth: 0
       - name: Check New Commit
         run: |
-          upstreamCode=https://github.com/yangqiang4125/BearTV
+          upstreamCode=https://github.com/chengxue2020/BearTV
           echo "upstreamCode=$upstreamCode" >> $GITHUB_ENV
-          commit=$(curl -sL $upstreamCode/commits/main |grep -o '/yangqiang4125/BearTV/commit/[a-z0-9]\+' |head -1 | cut -d\/ -f5)
+          commit=$(curl -sL $upstreamCode/commits/main |grep -o '/chengxue2020/BearTV/commit/[a-z0-9]\+' |head -1 | cut -d\/ -f5)
           if ! git log --oneline |grep -q "$commit"; then
             echo "commit=$commit" >> $GITHUB_ENV
             echo "commitS=${commit:0:7}" >> $GITHUB_ENV
