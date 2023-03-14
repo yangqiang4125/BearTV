@@ -7,8 +7,8 @@ on:
 
 
 env:
-  userName: FongMi
-  repoName: TV
+  userName: yangqiang4125
+  repoName: BearTV
   branchName: release
   appName: TV
 
