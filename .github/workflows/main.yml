@@ -10,7 +10,7 @@ env:
   userName: FongMi
   repoName: TV
   branchName: release
-  appName: AlphaTV
+  appName: TV
 
 jobs:
   prepare:
@@ -109,6 +109,9 @@ jobs:
           sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
           sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d-%h%m')"    
       - name: Build With Gradle
         continue-on-error: true
         working-directory: source/
@@ -119,7 +122,7 @@ jobs:
         run: |
           mkdir -p apk/
           for file in `find ~ -name "*.apk" -print`; do
-            mv "$file" apk/${{ env.appName }}_${{ env.product }}_${{ env.tag }}.apk
+            mv "$file" apk/${{ env.appName }}_${{ env.product }}_${{ env.tag }}_${{ steps.date.outputs.date }}.apk
             echo "buildResult=yes" >> $GITHUB_ENV
           done
       - name: Release and Upload Assets
