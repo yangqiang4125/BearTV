@@ -111,7 +111,7 @@ jobs:
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date +'%m-%d_%H%M')"    
+        run: echo "::set-output name=date::$(date +'_%H%M')"    
       - name: Build With Gradle
         continue-on-error: true
         working-directory: source/
