@@ -1,8 +1,6 @@
 name: Auto Build upsteam
 
 on:
-  schedule:
-    - cron: 15 10 12 * ?
   workflow_dispatch:
 
 
@@ -126,13 +124,10 @@ jobs:
             echo "buildResult=yes" >> $GITHUB_ENV
           done
       - name: Release and Upload Assets
-        uses: softprops/action-gh-release@v1
+      
+        uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.tag }}
-          tag_name: ${{ env.tag }}
-          body: ${{ env.commit }}
-          files: |
-            apk/*.apk
-            apk/*-source.zip
+          name: my-build-apk
+          path: ./**/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
