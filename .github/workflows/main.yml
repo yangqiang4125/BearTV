@@ -127,7 +127,10 @@ jobs:
       
         uses: actions/upload-artifact@v2
         with:
-          name: my-build-apk
-          path: ./**/*.apk
+          name: ${{ env.tag }}
+          tag_name: ${{ env.tag }}
+          body: ${{ env.commit }}
+          files: |
+            apk/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
