@@ -130,6 +130,8 @@ jobs:
           name: ${{ env.tag }}
           tag_name: ${{ env.tag }}
           body: ${{ env.commit }}
-          files: apk/*.apk
+          files: |
+            apk/*.apk
+            apk/*-source.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
